@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="layout :: headerFragment">
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron text-center">
+        <h1>Sample App</h1>
+    </div>
+    <div>
+        <div class="well">
+            <a th:href="@{/admin}">Admin Area</a>
+        </div>
+        <div class="well">
+            <a th:href="@{/users}">User Area</a>
+        </div>
+        <div class="well" th:if="${username != null}">
+            <p>You are logged in as <span th:text="${username}">--name--</span></p>
+            <a href="/logout">Logout</a>
+        </div>
+        <div class="well" th:if="${username == null}">
+            <p>You are not logged in </p>
+        </div>
+    </div>
+</div>
+<!-- container -->
+
+</body>
+</html>

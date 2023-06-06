@@ -1,0 +1,21 @@
+server:
+  port: 8082
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: lydtech-confidential-client
+            client-secret: hZUdBIsE6L6dfOu5QfnQbbu21d00UHZD
+            authorization-grant-type: authorization_code
+            scope: openid
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8080/realms/lydtech
+            user-name-attribute: preferred_username
+
+logging:
+  level:
+    org.springframework.security: trace

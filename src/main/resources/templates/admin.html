@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="layout :: headerFragment">
+</head>
+<body>
+<div id="container">
+    <div class="jumbotron text-center">
+        <h1>Sample App</h1>
+    </div>
+    <div>
+        <div class="well">
+            <h1>
+                Admin Area
+            </h1>
+            <p>Hello, <span th:text="${username}">--name--</span>.</p>
+            <div>
+                <a href="/logout">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- container -->
+</body>
+</html>
