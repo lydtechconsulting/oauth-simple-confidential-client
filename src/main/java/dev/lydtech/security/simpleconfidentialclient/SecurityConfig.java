@@ -47,15 +47,15 @@ class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, KeycloakLogoutHandler keycloakLogoutHandler) throws Exception {
         http.authorizeHttpRequests(authorise ->
-                        authorise
-                                .requestMatchers("/")
-                                .permitAll()
-                                .requestMatchers("/admin*")
-                                .hasRole("admin")
-                                .requestMatchers("/users*")
-                                .hasAnyRole("user", "admin")
-                                .anyRequest()
-                                .authenticated());
+                authorise
+                        .requestMatchers("/")
+                        .permitAll()
+                        .requestMatchers("/admin*")
+                        .hasRole("admin")
+                        .requestMatchers("/users*")
+                        .hasAnyRole("user", "admin")
+                        .anyRequest()
+                        .authenticated());
         http.oauth2Login()
                 .and()
                 .logout()
@@ -76,15 +76,14 @@ class SecurityConfig {
 
                     // Map the claims found in idToken and/or userInfo
                     // to one or more GrantedAuthority's and add it to mappedAuthorities
-                    Map<String, Object> realmAccess = userInfo.getClaim("realm_access");
-                    Collection<String> realmRoles;
-                    if (realmAccess != null
-                            && (realmRoles = (Collection<String>) realmAccess.get("roles")) != null) {
-                        realmRoles
-                                .forEach(role -> mappedAuthorities.add(new SimpleGrantedAuthority("ROLE_" + role)));
-                    }
-
+//                    Map<String, Object> realmAccess = userInfo.getClaim("realm_access");
+                    Collection<String> roles = userInfo.getClaim("authorities");
+                    if (roles != null)
+//                            && (realmRoles = (Collection<String>) realmAccess.get("roles")) != null) {
+                        roles
+                                .forEach(role -> mappedAuthorities.add(new SimpleGrantedAuthority(role)));
                 }
+
             });
 
             return mappedAuthorities;
