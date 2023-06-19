@@ -1,6 +1,5 @@
 package dev.lydtech.security.simpleconfidentialclient;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +21,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -47,20 +48,20 @@ class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, KeycloakLogoutHandler keycloakLogoutHandler) throws Exception {
         http.authorizeHttpRequests(authorise ->
-                        authorise
-                                .requestMatchers("/")
-                                .permitAll()
-                                .requestMatchers("/admin*")
-                                .hasRole("admin")
-                                .requestMatchers("/users*")
-                                .hasAnyRole("user", "admin")
-                                .anyRequest()
-                                .authenticated());
-        http.oauth2Login()
-                .and()
-                .logout()
-                .addLogoutHandler(keycloakLogoutHandler)
-                .logoutSuccessUrl("/");
+                authorise
+                        .requestMatchers("/")
+                        .permitAll()
+                        .requestMatchers("/admin*")
+                        .hasRole("admin")
+                        .requestMatchers("/users*")
+                        .hasAnyRole("user", "admin")
+                        .anyRequest()
+                        .authenticated());
+        http.oauth2Login(withDefaults())
+                .logout(logout ->
+                        logout
+                                .addLogoutHandler(keycloakLogoutHandler).
+                                logoutSuccessUrl("/"));
         return http.build();
     }
 
