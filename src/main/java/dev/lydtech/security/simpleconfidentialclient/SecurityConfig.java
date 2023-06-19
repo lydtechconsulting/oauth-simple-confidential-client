@@ -1,6 +1,5 @@
 package dev.lydtech.security.simpleconfidentialclient;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +21,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -56,11 +57,11 @@ class SecurityConfig {
                         .hasAnyRole("user", "admin")
                         .anyRequest()
                         .authenticated());
-        http.oauth2Login()
-                .and()
-                .logout()
-                .addLogoutHandler(keycloakLogoutHandler)
-                .logoutSuccessUrl("/");
+        http.oauth2Login(withDefaults())
+                .logout(logout ->
+                        logout
+                                .addLogoutHandler(keycloakLogoutHandler).
+                                logoutSuccessUrl("/"));
         return http.build();
     }
 
@@ -76,12 +77,9 @@ class SecurityConfig {
 
                     // Map the claims found in idToken and/or userInfo
                     // to one or more GrantedAuthority's and add it to mappedAuthorities
-//                    Map<String, Object> realmAccess = userInfo.getClaim("realm_access");
                     Collection<String> roles = userInfo.getClaim("authorities");
                     if (roles != null)
-//                            && (realmRoles = (Collection<String>) realmAccess.get("roles")) != null) {
-                        roles
-                                .forEach(role -> mappedAuthorities.add(new SimpleGrantedAuthority(role)));
+                        roles.forEach(role -> mappedAuthorities.add(new SimpleGrantedAuthority(role)));
                 }
 
             });
