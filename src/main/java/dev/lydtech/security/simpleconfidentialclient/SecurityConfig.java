@@ -1,5 +1,6 @@
 package dev.lydtech.security.simpleconfidentialclient;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,6 +19,7 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.HashSet;
@@ -40,13 +44,18 @@ class SecurityConfig {
                 .setReadTimeout(Duration.ofMillis(300000)).build();
     }
 
-    @Bean
-    public KeycloakLogoutHandler keycloakLogoutHandler(RestTemplate restTemplate) {
-        return new KeycloakLogoutHandler(restTemplate);
+    @Autowired
+    ClientRegistrationRepository clientRegistrationRepository;
+
+    OidcClientInitiatedLogoutSuccessHandler oidcLogoutSuccessHandler() {
+        OidcClientInitiatedLogoutSuccessHandler successHandler = new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
+        successHandler.setPostLogoutRedirectUri(URI.create("http://localhost:8082").toString());
+        return successHandler;
     }
 
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, KeycloakLogoutHandler keycloakLogoutHandler) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorise ->
                 authorise
                         .requestMatchers("/")
@@ -59,9 +68,9 @@ class SecurityConfig {
                         .authenticated());
         http.oauth2Login(withDefaults())
                 .logout(logout ->
-                        logout
-                                .addLogoutHandler(keycloakLogoutHandler).
-                                logoutSuccessUrl("/"));
+                        logout.logoutSuccessHandler(oidcLogoutSuccessHandler()));
+//                                .addLogoutHandler(keycloakLogoutHandler).
+//                                logoutSuccessUrl("/"));
         return http.build();
     }
 
