@@ -1,7 +1,5 @@
 package dev.lydtech.security.simpleconfidentialclient;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,13 +15,10 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
-import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -38,16 +33,7 @@ class SecurityConfig {
     }
 
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-
-        return builder.setConnectTimeout(Duration.ofMillis(300000))
-                .setReadTimeout(Duration.ofMillis(300000)).build();
-    }
-
-    @Autowired
-    ClientRegistrationRepository clientRegistrationRepository;
-
-    OidcClientInitiatedLogoutSuccessHandler oidcLogoutSuccessHandler() {
+    OidcClientInitiatedLogoutSuccessHandler oidcLogoutSuccessHandler(ClientRegistrationRepository clientRegistrationRepository) {
         OidcClientInitiatedLogoutSuccessHandler successHandler = new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
         successHandler.setPostLogoutRedirectUri(URI.create("http://localhost:8082").toString());
         return successHandler;
@@ -55,7 +41,7 @@ class SecurityConfig {
 
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, OidcClientInitiatedLogoutSuccessHandler oidcLogoutSuccessHandler) throws Exception {
         http.authorizeHttpRequests(authorise ->
                 authorise
                         .requestMatchers("/")
@@ -68,9 +54,7 @@ class SecurityConfig {
                         .authenticated());
         http.oauth2Login(withDefaults())
                 .logout(logout ->
-                        logout.logoutSuccessHandler(oidcLogoutSuccessHandler()));
-//                                .addLogoutHandler(keycloakLogoutHandler).
-//                                logoutSuccessUrl("/"));
+                        logout.logoutSuccessHandler(oidcLogoutSuccessHandler));
         return http.build();
     }
 
